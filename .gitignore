@@ -6,3 +6,4 @@ notebooks/all_keypoints.csv
 notebooks/dataset_sequences_norm.npz
 notebooks/data/*.csv
 *.mp4
+notebooks/
