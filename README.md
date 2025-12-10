@@ -149,7 +149,7 @@ Poignets
 
 Hanches
 
-- *Pull-up*
+- *Squat*
 
 Épaules
 
@@ -167,34 +167,11 @@ Chevilles
 
 **But :**
 ➡ réduire la dimension des features
+
 ➡ accélérer l’entraînement
+
 ➡ potentiellement augmenter la robustesse
 
-Installation
-1. Environnement
-conda create -n fitness python=3.10
-conda activate fitness
-pip install -r requirements.txt
-
-2. Tester Mediapipe
-python -c "import mediapipe as mp; print('OK')"
-
-🚀 Utilisation
-1. Extraire les keypoints
-
-Utiliser :
-notebooks/1_extract_keypoints.ipynb
-
-2. Générer les séquences
-
-notebooks/2_create_sequences.ipynb
-
-3. Entraîner le modèle
-
-notebooks/3_train_lstm.ipynb
-
-4. Lancer la détection en temps réel
-python realtime/realtime_inference.py
 
 Conseils pour prendre de bonnes vidéos
 
@@ -210,7 +187,8 @@ Répéter chaque BAD FORM clairement et de manière exagérée
 
 Enregistrer plusieurs personnes pour plus de robustesse
 
-➡ 10 à 20 vidéos GOOD
+➡ 10 à 20 vidéos GOOD par exercice
+
 ➡ 10 à 20 vidéos BAD par exercice
 pour une base solide.
 
@@ -225,7 +203,9 @@ pip install torch torchvision torchaudio
 - Pandas
 Pour charger et nettoyer les CSV :
 
-```pip install pandas```
+```
+pip install pandas
+```
 
 - NumPy
 Pour manipuler les séquences :
