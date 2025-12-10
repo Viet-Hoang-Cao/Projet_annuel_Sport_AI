@@ -6,17 +6,17 @@ Il s’appuie sur Mediapipe Pose, un pipeline complet de preprocessing → séqu
 
 Il supporte aujourd’hui 4 exercices :
 
-Plank
+- Plank
 
-Push-up
+- Push-up
 
-Squat
+- Squat
 
-Lunge
+- Lunge
 
 Les exercices possèdent des vidéos Good Form et Bad Form (pour l'instant, seulement les bad forms de plank).
 
-Objectifs du projet
+**Objectifs du projet**
 
 Classifier automatiquement la qualité d’un mouvement
 
@@ -24,15 +24,16 @@ Classifier automatiquement la qualité d’un mouvement
 
 Comparer deux stratégies de features :
 
-Full-body : 33 landmarks Mediapipe
+*Full-body :* 33 landmarks Mediapipe
 
-Lite-body : seulement les points clés pertinents par exercice
+*Lite-body :* seulement les points clés pertinents par exercice
 
 Permettre une prédiction en temps réel via webcam
 
 Avoir un pipeline robuste, réutilisable et modulaire
 
-+ Bad Forms pris en compte:
+*Bad Forms pris en compte:*
+
 - Plank
 
 Hips trop hauts
