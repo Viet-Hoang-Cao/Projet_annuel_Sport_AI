@@ -263,7 +263,7 @@ Compatible actuellement jusqu'à Python 3.11.
 pip install mediapipe
 ```
 
-3. Installer les dépendances principales
+4. Installer les dépendances principales
 ```
 pip install mediapipe opencv-python pandas numpy torch torchvision torchaudio matplotlib tqdm jupyter notebook
 ```
