@@ -7,3 +7,9 @@ notebooks/dataset_sequences_norm.npz
 notebooks/data/*.csv
 *.mp4
 notebooks/
+model_definition.py
+predic_live.py
+predic_live2.py
+predict_live.py
+predict_video.py
+predict_video2.py
