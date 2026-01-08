@@ -31,18 +31,41 @@ def extract_keypoints(video_path):
     return np.array(rows)
 
 def detect_motion_type(video):
-    cap=cv2.VideoCapture(video)
-    ys=[]
-    mp_pose=mp.solutions.pose.Pose()
+    """
+    Detect exercise type by analyzing hip movement.
+    Returns 'squat' if significant vertical movement, 'plank' otherwise.
+    """
+    try:
+        cap = cv2.VideoCapture(video)
+        if not cap.isOpened():
+            return "unknown"
+        
+        ys = []
+        mp_pose = mp.solutions.pose.Pose()
+        frames_checked = 0
+        max_frames = 40
 
-    for _ in range(40):
-        ret,f=cap.read()
-        if not ret: break
-        r=mp_pose.process(cv2.cvtColor(f,cv2.COLOR_BGR2RGB))
-        if r.pose_landmarks:
-            hip=r.pose_landmarks.landmark[24].y
-            ys.append(hip)
-    cap.release()
+        while frames_checked < max_frames:
+            ret, f = cap.read()
+            if not ret:
+                break
+            
+            frames_checked += 1
+            r = mp_pose.process(cv2.cvtColor(f, cv2.COLOR_BGR2RGB))
+            
+            if r.pose_landmarks:
+                # Use right hip landmark (index 24)
+                hip = r.pose_landmarks.landmark[24].y
+                ys.append(hip)
+        
+        cap.release()
 
-    d=np.ptp(ys)
-    return "squat" if d>0.08 else "plank"
+        if len(ys) < 5:  # Need at least 5 frames with pose detection
+            return "unknown"
+        
+        d = np.ptp(ys)  # Peak-to-peak (range) of hip y-coordinates
+        return "squat" if d > 0.08 else "plank"
+    
+    except Exception as e:
+        print(f"Error detecting motion type: {e}")
+        return "unknown"

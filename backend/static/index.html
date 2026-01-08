@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportAI - Analyse de Forme & Plans d'Entraînement</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg: #0f172a;
+            --bg-light: #1e293b;
+            --bg-card: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.75rem 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .tab:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.15);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            font-family: inherit;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-card);
+            transform: translateY(-2px);
+        }
+
+        .video-preview {
+            margin: 2rem 0;
+            text-align: center;
+            display: none;
+        }
+
+        .video-preview video {
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 16px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.good {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+            border: 1px solid var(--success);
+        }
+
+        .result.bad {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+            border: 1px solid var(--error);
+        }
+
+        .result.unknown {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .result-details {
+            line-height: 2;
+        }
+
+        .error {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        /* Training Plan Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .form-input,
+        .form-select {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .plan-result {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .plan-result.active {
+            display: block;
+        }
+
+        .plan-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .plan-day {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .plan-exercises {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .plan-exercises li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .plan-exercises li:last-child {
+            border-bottom: none;
+        }
+
+        .plan-exercises li strong {
+            color: var(--text);
+            margin-right: 0.5rem;
+        }
+
+        .exercise-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .exercise-tag {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">SportAI</div>
+            <p class="subtitle">Analyse de Forme & Plans d'Entraînement Personnalisés</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="analyze">📹 Analyse de Forme</div>
+            <div class="tab" data-tab="training">💪 Plan d'Entraînement</div>
+        </div>
+
+        <!-- Analyze Tab -->
+        <div class="tab-content active" id="analyze-tab">
+            <div class="card">
+                <h2 class="card-title">Analysez votre Forme d'Exercice</h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📹</div>
+                    <div class="upload-text">Glissez-déposez votre vidéo ici</div>
+                    <div class="upload-hint">ou cliquez pour parcourir</div>
+                    <input type="file" id="fileInput" accept="video/*">
+                </div>
+
+                <button class="btn" id="analyzeBtn" onclick="analyzeVideo()" disabled>Analyser la Forme</button>
+
+                <div class="video-preview" id="videoPreview">
+                    <video id="videoPlayer" controls></video>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyse de votre forme en cours...</p>
+                </div>
+
+                <div class="error" id="error"></div>
+
+                <div class="result" id="result">
+                    <div class="result-title" id="resultTitle"></div>
+                    <div class="result-details" id="resultDetails"></div>
+                </div>
+
+                <div class="exercise-tags">
+                    <span class="exercise-tag">Planche</span>
+                    <span class="exercise-tag">Squat</span>
+                    <span class="exercise-tag">Pompes</span>
+                    <span class="exercise-tag">Fentes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Plan Tab -->
+        <div class="tab-content" id="training-tab">
+            <div class="card">
+                <h2 class="card-title">Générez votre Plan d'Entraînement</h2>
+                
+                <form id="trainingForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="age">Âge</label>
+                            <input type="number" id="age" class="form-input" min="12" max="100" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="objective">Objectif</label>
+                            <select id="objective" class="form-select" required>
+                                <option value="">Sélectionnez un objectif</option>
+                                <option value="weight_loss">Perte de Poids</option>
+                                <option value="muscle_gain">Gain de Muscle</option>
+                                <option value="fitness">Garder la Forme</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="level">Niveau</label>
+                            <select id="level" class="form-select" required>
+                                <option value="">Sélectionnez un niveau</option>
+                                <option value="beginner">Débutant</option>
+                                <option value="intermediate">Intermédiaire</option>
+                                <option value="advanced">Avancé</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="frequency">Fréquence (séances/semaine)</label>
+                            <input type="number" id="frequency" class="form-input" min="2" max="7" value="3" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">Générer le Plan</button>
+                </form>
+
+                <div class="loading" id="planLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Génération de votre plan personnalisé...</p>
+                </div>
+
+                <div class="error" id="planError"></div>
+
+                <div class="plan-result" id="planResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+
+        // Video upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const videoPreview = document.getElementById('videoPreview');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+        let selectedFile = null;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+
+            if (!file.type.startsWith('video/')) {
+                showError('Veuillez sélectionner un fichier vidéo');
+                return;
+            }
+
+            selectedFile = file;
+            analyzeBtn.disabled = false;
+
+            const url = URL.createObjectURL(file);
+            videoPlayer.src = url;
+            videoPreview.style.display = 'block';
+            result.style.display = 'none';
+            error.style.display = 'none';
+        }
+
+        async function analyzeVideo() {
+            if (!selectedFile) {
+                showError('Veuillez sélectionner un fichier vidéo d\'abord');
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            error.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'L\'analyse a échoué');
+                }
+
+                displayResult(data);
+            } catch (err) {
+                showError(err.message || 'Une erreur est survenue lors de l\'analyse');
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayResult(data) {
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDetails = document.getElementById('resultDetails');
+
+            result.className = 'result';
+
+            if (data.exercise === 'unknown' || !data.result) {
+                result.classList.add('unknown');
+                resultTitle.textContent = '⚠️ Exercice Non Détecté';
+                resultDetails.innerHTML = `
+                    <strong>Statut:</strong> ${data.result || 'Impossible de détecter l\'exercice'}<br>
+                    <strong>Exercice:</strong> ${data.exercise || 'Inconnu'}
+                `;
+            } else {
+                const isGood = data.result === 'GOOD FORM';
+                result.classList.add(isGood ? 'good' : 'bad');
+                
+                const emoji = isGood ? '✅' : '❌';
+                resultTitle.textContent = `${emoji} ${data.result}`;
+                
+                const exerciseName = data.exercise.charAt(0).toUpperCase() + data.exercise.slice(1);
+                resultDetails.innerHTML = `
+                    <strong>Exercice:</strong> ${exerciseName}<br>
+                    <strong>Qualité de Forme:</strong> ${data.result}<br>
+                    ${data.confidence !== undefined ? `<strong>Confiance:</strong> ${(data.confidence * 100).toFixed(1)}%` : ''}
+                `;
+            }
+
+            result.style.display = 'block';
+        }
+
+        function showError(message) {
+            error.textContent = `Erreur: ${message}`;
+            error.style.display = 'block';
+        }
+
+        // Training plan form
+        document.getElementById('trainingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const age = parseInt(document.getElementById('age').value);
+            const objective = document.getElementById('objective').value;
+            const level = document.getElementById('level').value;
+            const frequency = parseInt(document.getElementById('frequency').value);
+
+            const planLoading = document.getElementById('planLoading');
+            const planError = document.getElementById('planError');
+            const planResult = document.getElementById('planResult');
+
+            planLoading.style.display = 'block';
+            planResult.classList.remove('active');
+            planError.style.display = 'none';
+
+            try {
+                const response = await fetch('/training-plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ age, objective, level, frequency })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Erreur lors de la génération du plan');
+                }
+
+                displayPlan(data);
+            } catch (err) {
+                planError.textContent = `Erreur: ${err.message}`;
+                planError.style.display = 'block';
+            } finally {
+                planLoading.style.display = 'none';
+            }
+        });
+
+        function displayPlan(data) {
+            const planResult = document.getElementById('planResult');
+            let html = '<h3 style="margin-bottom: 1.5rem; color: var(--primary);">Votre Plan d\'Entraînement</h3>';
+            
+            if (data.plan && data.plan.length > 0) {
+                data.plan.forEach((day, index) => {
+                    html += `
+                        <div class="plan-card">
+                            <div class="plan-day">Jour ${index + 1}</div>
+                            <ul class="plan-exercises">
+                                ${day.exercises.map(ex => `
+                                    <li>
+                                        <strong>${ex.name}:</strong> ${ex.sets} séries × ${ex.reps} répétitions
+                                        ${ex.rest ? ` (Repos: ${ex.rest})` : ''}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>Aucun plan disponible pour ces critères.</p>';
+            }
+            
+            planResult.innerHTML = html;
+            planResult.classList.add('active');
+        }
+
+        // Health check
+        fetch('/health')
+            .then(res => res.json())
+            .then(data => console.log('API Status:', data))
+            .catch(err => console.error('API Health Check Failed:', err));
+    </script>
+</body>
+</html>

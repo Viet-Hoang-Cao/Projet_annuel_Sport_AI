@@ -1,0 +1,12 @@
+# Copy this file to terraform.tfvars and update with your values
+# terraform.tfvars is in .gitignore and should not be committed
+
+aws_region            = "us-east-1"
+environment           = "dev"
+project_name          = "sportai"
+vpc_cidr              = "10.0.0.0/16"
+public_subnet_cidr    = "10.0.1.0/24"
+private_subnet_cidr   = "10.0.2.0/24"
+task_cpu              = 512
+task_memory           = 1024
+service_desired_count = 1

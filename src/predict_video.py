@@ -4,20 +4,54 @@ import cv2
 import mediapipe as mp
 import pickle
 from collections import Counter
-from model_definition import ExerciseLSTM  # ton modèle défini dans model_definition.py
+from model_definition import ExerciseLSTM
+from sklearn.preprocessing import LabelEncoder
+import sys
+import os
 
 # ---------------------------
-# 1) Charger le LabelEncoder
+# 1) Definir les classes (FIX for 22 classes model)
 # ---------------------------
-with open(r"C:/Users/caovi/OneDrive/Desktop/projet annuel/models/label_encoder.pkl", "rb") as f:
-    le = pickle.load(f)
+CLASSES_LIST = [
+    'barbell biceps curl',
+    'bench press',
+    'chest fly machine',
+    'deadlift',
+    'decline bench press',
+    'hammer curl',
+    'hip thrust',
+    'incline bench press',
+    'lat pulldown',
+    'lateral raise',
+    'leg extension',
+    'leg raises',
+    'plank',
+    'pull Up',
+    'push-up',
+    'romanian deadlift',
+    'russian twist',
+    'shoulder press',
+    'squat',
+    't bar row',
+    'tricep Pushdown',
+    'tricep dips'
+]
+CLASSES_LIST.sort()
+le = LabelEncoder()
+le.classes_ = np.array(CLASSES_LIST)
 
 # ---------------------------
 # 2) Charger le modèle
 # ---------------------------
-num_classes = len(le.classes_)
+num_classes = len(CLASSES_LIST)
 model = ExerciseLSTM(input_size=132, hidden_size=128, num_layers=2, num_classes=num_classes)
-model.load_state_dict(torch.load(r"C:/Users/caovi/OneDrive/Desktop/projet annuel/models/exercise_model.pth", map_location="cpu"))
+
+model_path = "notebooks/exercise_model.pth"
+if not os.path.exists(model_path):
+    print(f"Error: Model file {model_path} not found.")
+    exit(1)
+
+model.load_state_dict(torch.load(model_path, map_location="cpu"))
 model.eval()
 
 # ---------------------------
@@ -52,11 +86,18 @@ STEP = 10
 # ---------------------------
 # 6) Ouvrir la vidéo
 # ---------------------------
-video_path = r"C:\Users\caovi\OneDrive\Desktop\projet annuel\notebooks\verified_data\data_crawl_10s\deadlift\2e22d77e-94ce-47f6-912d-a28f1c4f70cf.mp4"  # <-- changer le chemin
+if len(sys.argv) > 1:
+    video_path = sys.argv[1]
+else:
+    video_path = "test_video.mp4" # Placeholder
+
+print(f"Processing video: {video_path}")
 cap = cv2.VideoCapture(video_path)
 
 if not cap.isOpened():
-    raise ValueError(f"Impossible d'ouvrir la vidéo : {video_path}")
+    print(f"Error: Impossible d'ouvrir la vidéo : {video_path}")
+    print("Usage: python src/predict_video.py <path_to_video>")
+    exit(1)
 
 landmarks = []
 
@@ -72,7 +113,8 @@ while True:
 cap.release()
 
 if len(landmarks) < SEQ_LEN:
-    raise ValueError("📉 Vidéo trop courte pour extraire une séquence complète.")
+    print("📉 Vidéo trop courte pour extraire une séquence complète.")
+    exit(1)
 
 # ---------------------------
 # 7) Prédiction par séquences glissantes
@@ -89,7 +131,9 @@ for i in range(0, len(landmarks) - SEQ_LEN + 1, STEP):
 # ---------------------------
 # 8) Vote majoritaire
 # ---------------------------
-final_label_id = Counter(all_predictions).most_common(1)[0][0]
-final_label = le.inverse_transform([final_label_id])[0]
-
-print("✅ Exercice principal de la vidéo :", final_label)
+if all_predictions:
+    final_label_id = Counter(all_predictions).most_common(1)[0][0]
+    final_label = le.inverse_transform([final_label_id])[0]
+    print("✅ Exercice principal de la vidéo :", final_label)
+else:
+    print("No predictions made.")
