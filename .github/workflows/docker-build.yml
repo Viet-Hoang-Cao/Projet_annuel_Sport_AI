@@ -1,0 +1,35 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main, develop, hachem ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: sportai:test
+          cache-from: type=registry,ref=sportai:cache
+          cache-to: type=inline
+
+      - name: Test Docker image
+        run: |
+          docker run --rm -d --name sportai-test -p 8000:8000 sportai:test
+          sleep 10
+          curl -f http://localhost:8000/health || exit 1
+          docker stop sportai-test

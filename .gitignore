@@ -1,15 +1,86 @@
-notebooks/raw_data/
-notebooks/test/
-notebooks/verified_data/
-notebooks/data/
-notebooks/all_keypoints.csv
-notebooks/dataset_sequences_norm.npz
-notebooks/data/*.csv
-*.mp4
-notebooks/
-model_definition.py
-predic_live.py
-predic_live2.py
-predict_live.py
-predict_video.py
-predict_video2.py
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+
+# Model files (large)
+*.pt
+*.pth
+*.pkl
+*.h5
+*.hdf5
+
+# Data files
+*.csv
+*.tsv
+*.json
+data/
+datasets/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars
+terraform/.terraform.tfstate.lock.info
+
+# Docker
+.dockerignore
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
