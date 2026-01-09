@@ -7,15 +7,12 @@ import cv2
 import tempfile
 import os
 
-# PATHS
 MODEL_PATH  = "app/models/plank_mlp_full.pt"
 SCALER_PATH = "app/scalers/scaler_full_plank.pkl"
 
-#LOAD SCALER
 with open(SCALER_PATH, "rb") as f:
     scaler = pickle.load(f)
 
-#MODEL DEFINITION (EXACT SAME AS TRAINING)
 class MLP_Full(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
@@ -23,36 +20,29 @@ class MLP_Full(nn.Module):
             nn.Linear(input_dim, 256),
             nn.ReLU(),
             nn.Dropout(0.3),
-
             nn.Linear(256, 128),
             nn.ReLU(),
             nn.Dropout(0.3),
-
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Dropout(0.3),
-
             nn.Linear(64, 1)
         )
 
     def forward(self, x):
         return self.net(x)
 
-
-INPUT_DIM = 132  # 33 landmarks × 4
-MODEL = MLP_Full(INPUT_DIM)
+MODEL = MLP_Full(132)
 MODEL.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
 MODEL.eval()
 
 mp_pose = mp.solutions.pose
-
 
 def extract_full_landmarks(results):
     row = []
     for lm in results.pose_landmarks.landmark:
         row.extend([lm.x, lm.y, lm.z, lm.visibility])
     return np.array(row).reshape(1, -1)
-
 
 def predict(video_bytes):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
@@ -68,30 +58,25 @@ def predict(video_bytes):
         if not ret:
             break
 
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = pose.process(rgb)
-        if not results.pose_landmarks:
+        res = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        if not res.pose_landmarks:
             continue
 
-        row = extract_full_landmarks(results)
-        row = scaler.transform(row)
-        x = torch.tensor(row, dtype=torch.float32)
-
-        with torch.no_grad():
-            p = torch.sigmoid(MODEL(x)).item()
-            probs.append(p)
+        X = scaler.transform(extract_full_landmarks(res))
+        p = torch.sigmoid(MODEL(torch.tensor(X, dtype=torch.float32))).item()
+        probs.append(p)
 
     cap.release()
     os.remove(path)
 
     if len(probs) == 0:
-        return {"exercise": "plank", "result": "NO POSE DETECTED"}
+        return {"exercise":"plank","result":"NO POSE DETECTED"}
 
-    mean_prob = float(np.mean(probs))
-    result = "BAD FORM" if mean_prob > 0.5 else "GOOD FORM"
+    probs = np.array(probs)
+    bad_ratio = np.mean(probs > 0.5)
 
     return {
-        "exercise": "plank",
-        "confidence": round(mean_prob, 3),
-        "result": result
+        "exercise":"plank",
+        "bad_ratio": round(float(bad_ratio),3),
+        "result":"BAD FORM" if bad_ratio > 0.30 else "GOOD FORM"
     }

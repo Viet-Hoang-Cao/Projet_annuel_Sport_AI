@@ -1,16 +1,13 @@
-from app.detectors.plank import predict as plank_predict
-from app.detectors.squat import predict as squat_predict
 from app.pose.extract import detect_motion_type
+from app.pose.annotate import analyze_and_annotate as plank_annotate
+from app.pose.annotate_squat import analyze_and_annotate_squat as squat_annotate
 
 def route(video_path):
-    ex = detect_motion_type(video_path)
+    exercise = detect_motion_type(video_path)
 
-    with open(video_path, "rb") as f:
-        video_bytes = f.read()
-
-    if ex == "plank":
-        return plank_predict(video_bytes)
-    elif ex == "squat":
-        return squat_predict(video_bytes)
+    if exercise == "plank":
+        return plank_annotate(video_path)
+    elif exercise == "squat":
+        return squat_annotate(video_path)
     else:
-        return {"exercise":"unknown","result":"Cannot detect"}
+        return plank_annotate(video_path)   # fallback sécurité

@@ -44,5 +44,8 @@ def detect_motion_type(video):
             ys.append(hip)
     cap.release()
 
+    if len(ys) < 5:
+        return "plank"
+
     d=np.ptp(ys)
     return "squat" if d>0.08 else "plank"
